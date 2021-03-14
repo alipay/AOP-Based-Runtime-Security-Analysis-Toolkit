@@ -1,7 +1,7 @@
 // Thread stack chain utils.
 // All functions in thie file **MUST** be called inside Java.perform().
 
-import * as ArsatLog from "./log"
+import * as ArsatLog from "./log";
 
 function hookThread() {
     console.log("Hook Thread.start");

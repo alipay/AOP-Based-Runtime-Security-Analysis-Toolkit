@@ -3,6 +3,8 @@ package com.arsat.tester;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -11,6 +13,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -78,7 +81,16 @@ public class MainActivity extends AppCompatActivity {
             case R.id.executor_service_submit_callable:
                 submit(new MyCallable<Integer>(this), mExecutor);
                 break;
+            case R.id.getinstalledpackages:
+                getInstalledPackages();
+                break;
         }
+    }
+
+    private void getInstalledPackages() {
+        PackageManager pm = getPackageManager();
+        List<PackageInfo> info = pm.getInstalledPackages(0);
+        Log.d(TAG, info.size() + " packages");
     }
 
     private void submit(Object obj, ExecutorService executor) {
