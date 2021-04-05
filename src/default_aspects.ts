@@ -6,7 +6,17 @@ function gDefaultAspectHandler(config: AspectConfig, ...params: any[]) {
     if (config.params !== undefined) {
         paramsStr = [...config.params].join(",");
     }
-    let description = `${config.class}.${config.method}(${paramsStr})`;
+    let paramsLogStr = "";
+    if (config.params_log !== undefined) {
+        for (let pl of config.params_log) {
+            if (paramsLogStr !== "") {
+                paramsLogStr += ",";
+            }
+            paramsLogStr += params[pl.location][pl.method]();
+        }
+    }
+
+    let description = `${config.class}.${config.method}(${paramsStr})[${paramsLogStr}]`;
     ArsatLog.log(description, true);
 }
 

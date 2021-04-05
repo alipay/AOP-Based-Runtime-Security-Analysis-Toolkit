@@ -1,7 +1,12 @@
+type ParamLogConfig = {
+    location: number;
+    method: string;
+}
 type AspectConfig = {
     class: string;
     method: string;
     params?: string[];
+    params_log?: ParamLogConfig[];
     handler?: any;
 };
 const gAspects: AspectConfig[] = [
@@ -211,6 +216,28 @@ const gAspects: AspectConfig[] = [
     {
         class: "java.io.FileInputStream",
         method: "$init",
+        params: [
+            "java.lang.String"
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ]
+    },
+    {
+        class: "java.io.FileInputStream",
+        method: "$init",
+        params: [
+            "java.io.File"
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "getCanonicalPath"
+            },
+        ]
     },
     {
         class: "java.io.FileOutputStream",

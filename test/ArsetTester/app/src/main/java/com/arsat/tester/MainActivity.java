@@ -6,10 +6,13 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,6 +27,22 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "ArsatTest";
 
     private ExecutorService mExecutor = Executors.newCachedThreadPool();
+    static class MyHandler extends Handler {
+        private Context mContext;
+        public MyHandler(Context context) {
+            mContext = context;
+        }
+        @Override
+        public void handleMessage(Message msg) {
+            Log.d(TAG, "message: " + msg.what);
+            switch (msg.what) {
+                case 1:
+                    testFile(mContext);
+                    break;
+            }
+        }
+    }
+    private MyHandler mHandler = new MyHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +103,44 @@ public class MainActivity extends AppCompatActivity {
             case R.id.getinstalledpackages:
                 getInstalledPackages();
                 break;
+            case R.id.handler:
+                testHandler();
+                break;
+            case R.id.fis:
+                testFileInputStreamString();
+                break;
+            case R.id.fis2:
+                testFileInputStreamFile();
+                break;
         }
+    }
+
+    private void testFileInputStreamFile() {
+        try {
+            File file = new File("/sdcard/testFile");
+            FileInputStream fis = new FileInputStream(file);
+            Log.d(TAG, "" + fis.available());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void testFileInputStreamString() {
+        try {
+            FileInputStream fis = new FileInputStream("/sdcard/testString");
+            Log.d(TAG, "" + fis.available());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void testHandler() {
+        Message msg = Message.obtain(mHandler);
+        msg.what = 1;
+        msg.sendToTarget();
     }
 
     private void getInstalledPackages() {

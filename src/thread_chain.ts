@@ -66,12 +66,6 @@ function findAndHookMethod(pattern: string, filter: any, hooker: any) {
     }
 }
 
-function hookExecutors() {
-    console.log("Hook Executors");
-
-    findAndHookMethod("*!execute/i", executorsFilter, executorsHooker);
-}
-
 function checkRunnable(runnableClazz: any): boolean {
     let interfaces = runnableClazz.getInterfaces();
     for (const inter of interfaces) {
@@ -123,17 +117,31 @@ function hookAllThreadSwitch() {
     // Thread
     hookThread();
     hookThreadPoolExecutor();
-    //hookExecutors();
 }
 
-function hookAllRunnable() {
+function hookAllRunnables() {
     console.log("Hook all runnable");
     findAndHookMethod("*!run/i", runnableFilter, runnableHooker);
 }
 
+function hookAllHandlers() {
+    console.log("Hook all handlers");
+    let handlerClass = Java.use("android.os.Handler");
+    handlerClass.enqueueMessage.implementation = function (queue: any, msg: any, timeMills: any) {
+        let result = this.enqueueMessage(queue, msg, timeMills);
+        ArsatLog.log("Handler.enqueueMessage, " + msg.hashCode(), true);
+        return result;
+    }
+    handlerClass.dispatchMessage.implementation = function (msg: any) {
+        ArsatLog.log("Handler.dispatchMessage begin, " + msg.hashCode(), true);
+        this.dispatchMessage(msg);
+    }
+}
+
 function initThreadStackChain() {
     hookAllThreadSwitch();
-    hookAllRunnable();
+    hookAllRunnables();
+    hookAllHandlers();
 }
 
 export { initThreadStackChain };
