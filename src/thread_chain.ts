@@ -12,14 +12,16 @@ function hookThread() {
         let name = this.getName();
         let threadId = id + "-" + name;
         let hash = this.hashCode();
-        ArsatLog.log("Thread.start," + threadId + "," + hash, true);
+        ArsatLog.log("Thread.start()", `${threadId}-${hash}`, true);
         this.start();
     }
+    /*
     threadClass.run.implementation = function () {
         let hash = this.hashCode();
-        ArsatLog.log("Thread.run," + hash);
+        ArsatLog.log("Thread.run()", hash);
         this.run();
     }
+    */
 }
 
 function executorsFilter(name: string, candidateClass: any, candidateClazz: any) {
@@ -38,7 +40,7 @@ function executorsFilter(name: string, candidateClass: any, candidateClazz: any)
 function executorsHooker(name: string, executorClass: any) {
     console.log("Hook " + name);
     executorClass.execute.overload("java.lang.Runnable").implementation = function (runnable: any) {
-        ArsatLog.log("Executor.execute," + runnable.hashCode(), true);
+        ArsatLog.log("Executor.execute(),", runnable.hashCode(), true);
         this.execute(runnable);
     }
 }
@@ -86,9 +88,9 @@ var runnableBlackList = [
 function runnableHooker(name: string, runnableClass: any) {
     console.log("hook " + name);
     runnableClass.run.overload().implementation = function () {
-        ArsatLog.log("Runnable.run begin," + this.hashCode());
+        ArsatLog.log("Runnable.begin()", this.hashCode());
         this.run();
-        ArsatLog.log("Runnable.run end," + this.hashCode());
+        ArsatLog.log("Runnable.end()", this.hashCode());
     }
 }
 function runnableFilter(name: string, candidateClass: any, candidateClazz: any) {
@@ -106,7 +108,7 @@ function hookThreadPoolExecutor() {
     exectorClass.execute.overload("java.lang.Runnable").implementation = function (runnable: any) {
         let obj = Java.cast(runnable, objectClass);
         let hashCode = obj.hashCode();
-        ArsatLog.log("ThreadPoolExecutor.execute begin, " + hashCode, true);
+        ArsatLog.log("ThreadPoolExecutor.execute()", hashCode, true);
         this.execute(runnable);
         //ArsatLog.log("ThreadPoolExecutor.execute end.")
     }
@@ -121,7 +123,7 @@ function hookAllThreadSwitch() {
 
 function hookAllRunnables() {
     console.log("Hook all runnable");
-    findAndHookMethod("*!run/i", runnableFilter, runnableHooker);
+    findAndHookMethod("*!run", runnableFilter, runnableHooker);
 }
 
 function hookAllHandlers() {
@@ -129,11 +131,11 @@ function hookAllHandlers() {
     let handlerClass = Java.use("android.os.Handler");
     handlerClass.enqueueMessage.implementation = function (queue: any, msg: any, timeMills: any) {
         let result = this.enqueueMessage(queue, msg, timeMills);
-        ArsatLog.log("Handler.enqueueMessage, " + msg.hashCode(), true);
+        ArsatLog.log("Handler.enqueueMessage()", msg.hashCode(), true);
         return result;
     }
     handlerClass.dispatchMessage.implementation = function (msg: any) {
-        ArsatLog.log("Handler.dispatchMessage begin, " + msg.hashCode(), true);
+        ArsatLog.log("Handler.dispatchMessage()", msg.hashCode(), true);
         this.dispatchMessage(msg);
     }
 }

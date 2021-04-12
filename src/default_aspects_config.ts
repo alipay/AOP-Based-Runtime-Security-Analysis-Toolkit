@@ -46,6 +46,7 @@ const gAspects: AspectConfig[] = [
     {
         class: "android.location.LocationManager",
         method: "getLastKnownLocation",
+        params: ["java.lang.String"],
     },
     {
         class: "android.location.LocationManager",
@@ -156,8 +157,15 @@ const gAspects: AspectConfig[] = [
     },
     // ContentResolver: Contact, Sms, Calendar, etc.
     {
-        class: "android.content.ContentResolver",
+        //class: "android.content.ContentResolver",
+        class: "android.app.ContextImpl$ApplicationContentResolver",
         method: "query",
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            }
+        ]
     },
     // Dex loaders
     {
@@ -242,6 +250,56 @@ const gAspects: AspectConfig[] = [
     {
         class: "java.io.FileOutputStream",
         method: "$init",
+        params: [
+            "java.lang.String"
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ]
+    },
+    {
+        class: "java.io.FileOutputStream",
+        method: "$init",
+        params: [
+            "java.lang.String",
+            "boolean"
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ]
+    },
+    {
+        class: "java.io.FileOutputStream",
+        method: "$init",
+        params: [
+            "java.io.File",
+            "boolean"
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "getCanonicalPath"
+            },
+        ]
+    },
+    {
+        class: "java.io.FileOutputStream",
+        method: "$init",
+        params: [
+            "java.io.File"
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "getCanonicalPath"
+            },
+        ]
     },
     {
         class: "java.io.RandomAccessFile",

@@ -12,7 +12,7 @@ Java.perform(function () {
     // Tmp test.
     let fileClass = Java.use("java.io.File");
     fileClass.createNewFile.implementation = function () {
-        ArsatLog.log("File.createNewFile", true);
+        ArsatLog.log("File.createNewFile()", "-", true);
         return this.createNewFile();
     }
 });

@@ -37,27 +37,19 @@ function injectAspect(config: AspectProfile.AspectConfig) {
             handler(config, ...ps);
             return this[config.method](...ps);
         };
+        console.log(`Hooked ${config.class}.${config.method}(${params})`);
     } else {
-        if (config.method === "requestSingleUpdates") {
-            for (let i of Object.getOwnPropertyNames(targetClass)) {
-                console.log(i);
-            }
-        }
         let overloads = targetClass[config.method].overloads;
-        for (let i in overloads) {
-            if (overloads[i].hasOwnProperty('argumentTypes')) {
-                var parameters = [];
-                for (let j in overloads[i].argumentTypes) {
-                    parameters.push(overloads[i].argumentTypes[j].className);
-                }
-                targetClass[config.method].overload.apply('this', parameters).implementation = function (...ps: any[]) {
-                    handler(config, ...ps);
-                    return this[config.method](...ps);
-                };
+        let count = 0;
+        for (let i of overloads) {
+            i.implementation = function (...ps: any[]) {
+                handler(config, ...ps);
+                return this[config.method](...ps);
             }
+            ++count;
         }
+        console.log(`Hooked ${count} overloads of ${config.class}.${config.method}(${params})`);
     }
-    console.log(`Hooked ${config.class}.${config.method}(${params})`);
 }
 
 export { injectAspects };

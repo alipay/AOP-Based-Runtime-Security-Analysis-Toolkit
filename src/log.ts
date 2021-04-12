@@ -5,24 +5,23 @@ function getCurrentThreadId() {
     let currThread = threadClass.currentThread();
     let currId = currThread.getId();
     let currName = currThread.getName();
-    return currId + "-" + currName;
+    return `${currId}-${currName}-${currThread.hashCode()}`;
 }
 
 function getStack(prefix: string = "") {
     let currThread = Java.use("java.lang.Thread").currentThread();
     let stackTrace = currThread.getStackTrace();
-    let stack = "\n";
-    for (const element of stackTrace) {
-        stack += prefix + element.toString() + "\n";
-    }
+    let stack = stackTrace.join("#");
     return stack;
 }
 
-function log(msg: string, printStack: boolean = false) {
+function log(aspect: string, params: string, printStack: boolean = false) {
+    let stack = '-';
     if (printStack) {
-        msg = msg + getStack("ARSAT:     ");
+        stack = getStack("");
     }
-    console.log("ARSAT: " + getCurrentThreadId() + ":" + msg);
+
+    send(`${getCurrentThreadId()},${aspect},${params},${stack}`);
 }
 
 export { log };

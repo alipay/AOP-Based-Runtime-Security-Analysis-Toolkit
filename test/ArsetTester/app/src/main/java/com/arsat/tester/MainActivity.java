@@ -2,9 +2,12 @@ package com.arsat.tester;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -112,6 +115,20 @@ public class MainActivity extends AppCompatActivity {
             case R.id.fis2:
                 testFileInputStreamFile();
                 break;
+            case R.id.query:
+                testQuery();
+                break;
+        }
+    }
+
+    private void testQuery() {
+        ContentResolver cr = getContentResolver();
+        Log.d(TAG, cr.getClass().getCanonicalName());
+        try {
+            Cursor cursor = cr.query(Uri.parse("content://com.eg.android.AlipayGphone/testquery"), null, null, null);
+            Log.d(TAG, "cursor: " + cursor.getCount());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -161,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "hash: " + this.hashCode());
                 testFile(context);
             }
         });
