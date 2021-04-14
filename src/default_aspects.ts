@@ -1,7 +1,7 @@
 import * as ArsatLog from "./log";
 import { AspectConfig } from "./default_aspects_config"
 
-function gDefaultAspectHandler(config: AspectConfig, ...params: any[]) {
+function gDefaultAspectHandler(caller_obj: any, config: AspectConfig, ...params: any[]) {
     let paramsStr = "";
     if (config.params !== undefined) {
         paramsStr = [...config.params].join(" ");
@@ -12,15 +12,20 @@ function gDefaultAspectHandler(config: AspectConfig, ...params: any[]) {
             if (paramsLogStr !== "") {
                 paramsLogStr += " ";
             }
-            paramsLogStr += params[pl.location][pl.method]();
+            if (pl.location < 0) {
+                paramsLogStr += caller_obj[pl.method]();
+            } else {
+                paramsLogStr += params[pl.location][pl.method]();
+            }
         }
     }
 
+    let category = `${config.category}`;
     let aspect = `${config.class}.${config.method}(${paramsStr})`;
     if (paramsLogStr === "") {
         paramsLogStr = '-';
     }
-    ArsatLog.log(aspect, paramsLogStr, true);
+    ArsatLog.log(aspect, paramsLogStr, true, category);
 }
 
 export { AspectConfig };

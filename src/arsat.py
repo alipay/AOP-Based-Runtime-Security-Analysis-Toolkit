@@ -7,6 +7,10 @@ import sqlite3
 import sys
 
 
+g_has_quit = False
+g_curr_activity = "unknown"
+
+
 class Context:
     def __init__(self):
         self.thread_stacktraces = {}
@@ -20,18 +24,26 @@ def get_stack(stack, parent):
             stack = stack[:-1]
         stack += "##"
         stack += parent[4]
-        parent = parent[5]
+        parent = parent[6]
+    if len(stack) > 0 and stack[-1] == "\n":
+        stack = stack[:-1]
     return stack
 
 
 def analyze_line(line, context):
-    ti, thread_id, aspect, params, stack = tuple(line.split(","))
+    ti, thread_id, aspect, params, stack, category = tuple(line.split(","))
     parent = None
     if thread_id in context.thread_stacktraces:
         parent = context.thread_stacktraces[thread_id]
 
-    if aspect == "Thread.start()":
-        context.thread_stacktraces[params] = ti, thread_id, aspect, params, stack, parent
+    if aspect == "Activity.onResume()":
+        global g_curr_activity
+        g_curr_activity = params
+        return None
+    elif aspect == "Activity.onPause()":
+        return None
+    elif aspect == "Thread.start()":
+        context.thread_stacktraces[params] = ti, thread_id, aspect, params, stack, category, parent
     elif aspect == "Runnable.begin()":
         if params in context.runnables:
             context.thread_stacktraces[thread_id] = context.runnables[params]
@@ -39,7 +51,7 @@ def analyze_line(line, context):
         if params in context.runnables:
             del context.runnables[params]
     elif aspect == "ThreadPoolExecutor.execute()":
-        context.runnables[params] = ti, thread_id, aspect, params, stack, parent
+        context.runnables[params] = ti, thread_id, aspect, params, stack, category, parent
     elif aspect == "Handler.enqueueMessage()":
         handler_black_words = {
             "android.view.View.post(",
@@ -51,15 +63,13 @@ def analyze_line(line, context):
                 found = True
                 break
         if not found:
-            context.messages[params] = ti, thread_id, aspect, params, stack, parent
+            context.messages[params] = ti, thread_id, aspect, params, stack, category, parent
     elif aspect == "Handler.dispatchMessage()":
         if params in context.messages:
             context.thread_stacktraces[thread_id] = context.messages[params]
     else:
         stack = get_stack(stack, parent)
-        print(ti, aspect, params)
-        print("    " + stack)
-        return ti, aspect, params, stack
+        return ti, aspect, params, stack, category
     return None
 
 
@@ -67,16 +77,17 @@ def analyze(package, log_filename):
     conn = sqlite3.connect(package + ".db")
     cur = conn.cursor()
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS arsat (time text, aspect text, params text, stacktrace text)")
+        "CREATE TABLE IF NOT EXISTS arsat (time text, aspect text, params text, stacktrace text, category text, entry text, foreground text)")
 
     context = Context()
     with open(log_filename, "r") as log_file:
         for line in log_file:
+            if len(line) > 0 and line[-1] == "\n":
+                line = line[:-1]
             data = analyze_line(line, context)
             if data is not None:
-                insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}')".format(
-                    *data)
-                print(insert_sql)
+                insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
+                    *data, g_curr_activity, g_curr_activity)
                 cur.execute(insert_sql)
 
     conn.commit()
@@ -93,7 +104,7 @@ def write_to_file(message):
 def on_message(message, data):
     # print(message["payload"])
     # if message["payload"].startswith("ARSAT:"):
-    if message["type"] == "send":
+    if not g_has_quit and message["type"] == "send":
         write_to_file(message["payload"])
 
 
@@ -106,23 +117,29 @@ def arsat_monitor(package):
         print("Can't create log file!")
         sys.exit(1)
 
-    session = frida.get_usb_device().attach(package)
+    device = frida.get_usb_device()
+    pid = device.spawn([package])
+    session = device.attach(pid)
+
     script_content = open("dist/agent.js").read()
     script = session.create_script(script_content)
     script.on("message", on_message)
     script.load()
+    device.resume(pid)
     try:
         while True:
             sys.stdin.read()
     except KeyboardInterrupt:
-        print("Quit monitor.")
+        print("[-] Quit monitor.")
+    global g_has_quit
+    g_has_quit = True
 
-    print("Start analyzing...")
+    print("[-] Start analyzing...")
 
     log_file.close()
     analyze(package, filename)
     log_file.close()
-    print("Done.")
+    print("[-] Done.")
 
 
 def main():

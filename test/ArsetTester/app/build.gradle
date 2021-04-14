@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "com.arsat.tester"
         minSdkVersion 26
-        targetSdkVersion 30
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 

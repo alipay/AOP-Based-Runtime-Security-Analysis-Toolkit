@@ -11,13 +11,14 @@ function injectAspect(config: AspectProfile.AspectConfig) {
     try {
         targetClass = Java.use(config.class);
     } catch (e) {
-        console.log(`Can't find ${config.class}`);
+        // ignore
+        // console.log(`Can't find ${config.class}`);
     }
     if (targetClass === undefined) {
         return;
     }
     if (!targetClass.hasOwnProperty(config.method)) {
-        console.log(`Can't find ${config.method} in ${config.class}`);
+        // console.log(`Can't find ${config.method} in ${config.class}`);
         return;
     }
 
@@ -30,25 +31,25 @@ function injectAspect(config: AspectProfile.AspectConfig) {
         params = [...config.params].join(",");
     }
 
-    console.log(`Start hooking ${config.class}.${config.method}(${params})`);
+    // console.log(`Start hooking ${config.class}.${config.method}(${params})`);
     if (config.params !== undefined) {
         let ov = targetClass[config.method].overload(...config.params);
         ov.implementation = function (...ps: any[]) {
-            handler(config, ...ps);
+            handler(this, config, ...ps);
             return this[config.method](...ps);
         };
-        console.log(`Hooked ${config.class}.${config.method}(${params})`);
+        // console.log(`Hooked ${config.class}.${config.method}(${params})`);
     } else {
         let overloads = targetClass[config.method].overloads;
         let count = 0;
         for (let i of overloads) {
             i.implementation = function (...ps: any[]) {
-                handler(config, ...ps);
+                handler(this, config, ...ps);
                 return this[config.method](...ps);
             }
             ++count;
         }
-        console.log(`Hooked ${count} overloads of ${config.class}.${config.method}(${params})`);
+        //console.log(`Hooked ${count} overloads of ${config.class}.${config.method}(${params})`);
     }
 }
 

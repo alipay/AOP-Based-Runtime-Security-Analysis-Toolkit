@@ -15,13 +15,13 @@ function getStack(prefix: string = "") {
     return stack;
 }
 
-function log(aspect: string, params: string, printStack: boolean = false) {
+function log(aspect: string, params: string, printStack: boolean = false, category: string = "-") {
     let stack = '-';
     if (printStack) {
         stack = getStack("");
     }
 
-    send(`${getCurrentThreadId()},${aspect},${params},${stack}`);
+    send(`${getCurrentThreadId()},${aspect},${params},${stack},${category}`);
 }
 
 export { log };

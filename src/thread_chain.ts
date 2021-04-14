@@ -4,7 +4,7 @@
 import * as ArsatLog from "./log";
 
 function hookThread() {
-    console.log("Hook Thread.start");
+    //console.log("Hook Thread.start");
 
     let threadClass = Java.use("java.lang.Thread");
     threadClass.start.implementation = function () {
@@ -38,7 +38,7 @@ function executorsFilter(name: string, candidateClass: any, candidateClazz: any)
 }
 
 function executorsHooker(name: string, executorClass: any) {
-    console.log("Hook " + name);
+    // console.log("Hook " + name);
     executorClass.execute.overload("java.lang.Runnable").implementation = function (runnable: any) {
         ArsatLog.log("Executor.execute(),", runnable.hashCode(), true);
         this.execute(runnable);
@@ -56,11 +56,11 @@ function findAndHookMethod(pattern: string, filter: any, hooker: any) {
             let candidateClass = factory.use(cla.name);
             let candidateClazz = candidateClass.class;
             if (modifierClass.isAbstract(candidateClazz.getModifiers())) {
-                console.log(cla.name + " is abstract");
+                // console.log(cla.name + " is abstract");
                 continue;
             }
             if (!filter(cla.name, candidateClass, candidateClazz)) {
-                console.log(cla.name + " not match");
+                // console.log(cla.name + " not match");
                 continue;
             }
             hooker(cla.name, candidateClass);
@@ -86,7 +86,7 @@ var runnableBlackList = [
     "android.view.ViewRootImpl$TraversalRunnable",
 ];
 function runnableHooker(name: string, runnableClass: any) {
-    console.log("hook " + name);
+    //console.log("hook " + name);
     runnableClass.run.overload().implementation = function () {
         ArsatLog.log("Runnable.begin()", this.hashCode());
         this.run();
@@ -122,12 +122,12 @@ function hookAllThreadSwitch() {
 }
 
 function hookAllRunnables() {
-    console.log("Hook all runnable");
+    //console.log("Hook all runnable");
     findAndHookMethod("*!run", runnableFilter, runnableHooker);
 }
 
 function hookAllHandlers() {
-    console.log("Hook all handlers");
+    //console.log("Hook all handlers");
     let handlerClass = Java.use("android.os.Handler");
     handlerClass.enqueueMessage.implementation = function (queue: any, msg: any, timeMills: any) {
         let result = this.enqueueMessage(queue, msg, timeMills);
