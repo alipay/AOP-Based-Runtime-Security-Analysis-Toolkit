@@ -3,6 +3,7 @@
 import argparse
 import time
 import frida
+import os
 import sqlite3
 import sys
 
@@ -73,8 +74,8 @@ def analyze_line(line, context):
     return None
 
 
-def analyze(package, log_filename):
-    conn = sqlite3.connect(package + ".db")
+def analyze(package, log_filename, db_filename):
+    conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
     cur.execute(
         "CREATE TABLE IF NOT EXISTS arsat (time text, aspect text, params text, stacktrace text, category text, entry text, foreground text)")
@@ -86,8 +87,8 @@ def analyze(package, log_filename):
                 line = line[:-1]
             data = analyze_line(line, context)
             if data is not None:
-                insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
-                    *data, g_curr_activity, g_curr_activity)
+                insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}', '{}', '{entry}', '{foreground}')".format(
+                    *data, entry=g_curr_activity, foreground=g_curr_activity)
                 cur.execute(insert_sql)
 
     conn.commit()
@@ -102,17 +103,19 @@ def write_to_file(message):
 
 
 def on_message(message, data):
-    # print(message["payload"])
-    # if message["payload"].startswith("ARSAT:"):
     if not g_has_quit and message["type"] == "send":
         write_to_file(message["payload"])
 
 
-def arsat_monitor(package):
+def arsat_monitor(arg):
+    package = arg.package
+    output_dir = os.getcwd() if arg.output is None else arg.output
+    log_filename = output_dir + "/" + package + ".log"
+    db_filename = output_dir + "/" + package + ".db"
+
     global log_file
-    filename = package + ".log"
     try:
-        log_file = open(filename, "w")
+        log_file = open(log_filename, "w")
     except:
         print("Can't create log file!")
         sys.exit(1)
@@ -123,16 +126,16 @@ def arsat_monitor(package):
         pid = device.spawn([package])
         session = device.attach(pid)
 
-        script_content = open("dist/agent.js").read()
+        self_path = os.path.abspath(sys.argv[0])
+        self_dir = self_path[:self_path.rfind("/")]
+        script_path = self_dir + "/../dist/agent.js"
+        script_content = open(script_path).read()
         script = session.create_script(script_content)
         script.on("message", on_message)
         script.load()
         device.resume(pid)
-    except frida.InvalidArgumentError as e:
-        print("Device not found")
-        sys.exit(1)
-    except frida.ServerNotRunningError:
-        print("Frida server not running on device")
+    except Exception as e:
+        print(e)
         sys.exit(1)
 
     try:
@@ -146,17 +149,18 @@ def arsat_monitor(package):
     print("[-] Start analyzing...")
 
     log_file.close()
-    analyze(package, filename)
-    log_file.close()
-    print("[-] Done.")
+    analyze(package, log_filename, db_filename)
+    os.remove(log_filename)
+    print("[-] Done. Write data to {}".format(db_filename))
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("package", help="application package name")
+    parser.add_argument("-o", "--output", help="output path")
     args = parser.parse_args()
 
-    arsat_monitor(args.package)
+    arsat_monitor(args)
 
 
 if __name__ == "__main__":
