@@ -117,15 +117,24 @@ def arsat_monitor(package):
         print("Can't create log file!")
         sys.exit(1)
 
-    device = frida.get_usb_device()
-    pid = device.spawn([package])
-    session = device.attach(pid)
+    try:
+        device = frida.get_usb_device()
+        print("[*] Found device: {}".format(device.name))
+        pid = device.spawn([package])
+        session = device.attach(pid)
 
-    script_content = open("dist/agent.js").read()
-    script = session.create_script(script_content)
-    script.on("message", on_message)
-    script.load()
-    device.resume(pid)
+        script_content = open("dist/agent.js").read()
+        script = session.create_script(script_content)
+        script.on("message", on_message)
+        script.load()
+        device.resume(pid)
+    except frida.InvalidArgumentError as e:
+        print("Device not found")
+        sys.exit(1)
+    except frida.ServerNotRunningError:
+        print("Frida server not running on device")
+        sys.exit(1)
+
     try:
         while True:
             sys.stdin.read()

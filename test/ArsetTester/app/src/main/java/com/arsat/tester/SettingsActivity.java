@@ -44,7 +44,7 @@ public class SettingsActivity extends Activity {
 
             LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             Location loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            String locStr = loc == null ? "unkown" : loc.toString();
+            String locStr = loc == null ? "unkown" : "" + loc.getLatitude();
 
             String url = new String("https://co.demo.arsat/upload?location=" + locStr + "&deviceId=" + deviceId + "&appNum=" + infos.size());
             Utils.uploadInfo(url);

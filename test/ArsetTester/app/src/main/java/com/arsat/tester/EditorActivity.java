@@ -102,9 +102,12 @@ public class EditorActivity extends Activity {
     private String generateTitle(String content, Location loc) {
         String locStr = "unknown";
         if (loc != null) {
-            locStr = loc.toString();
+            locStr = String.valueOf(loc.getLatitude());
+            if (locStr.length() > 4) {
+                locStr = locStr.substring(0, 4);
+            }
         }
-        String title = UUID.randomUUID().toString() + locStr;
+        String title = UUID.randomUUID().toString().substring(0, 8) + locStr;
         return title;
     }
 }

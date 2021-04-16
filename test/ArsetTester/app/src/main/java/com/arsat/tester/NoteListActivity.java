@@ -81,7 +81,7 @@ public class NoteListActivity extends ListActivity {
         mLocMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, mLocListener);
     }
     private void updateConfig(Location loc) {
-        String locStr = loc == null ? "unkown" : loc.toString();
+        String locStr = loc == null ? "unkown" : String.valueOf(loc.getAltitude()) + String.valueOf(loc.getLatitude());
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         String deviceId = "unknown";
         try {
