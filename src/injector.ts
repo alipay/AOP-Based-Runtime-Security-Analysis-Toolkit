@@ -1,4 +1,5 @@
 import * as AspectProfile from "./default_aspects";
+import * as ArsatLog from "./log";
 
 function injectAspects() {
     AspectProfile.gAspects.forEach(config => {
@@ -31,14 +32,14 @@ function injectAspect(config: AspectProfile.AspectConfig) {
         params = [...config.params].join(",");
     }
 
-    // console.log(`Start hooking ${config.class}.${config.method}(${params})`);
+    ArsatLog.debug(`Start hooking ${config.class}.${config.method}(${params})`);
     if (config.params !== undefined) {
         let ov = targetClass[config.method].overload(...config.params);
         ov.implementation = function (...ps: any[]) {
             handler(this, config, ...ps);
             return this[config.method](...ps);
         };
-        // console.log(`Hooked ${config.class}.${config.method}(${params})`);
+        ArsatLog.debug(`Hooked ${config.class}.${config.method}(${params})`);
     } else {
         let overloads = targetClass[config.method].overloads;
         let count = 0;
@@ -49,7 +50,7 @@ function injectAspect(config: AspectProfile.AspectConfig) {
             }
             ++count;
         }
-        //console.log(`Hooked ${count} overloads of ${config.class}.${config.method}(${params})`);
+        ArsatLog.debug(`Hooked ${count} overloads of ${config.class}.${config.method}(${params})`);
     }
 }
 

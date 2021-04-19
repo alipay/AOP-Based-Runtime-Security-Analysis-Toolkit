@@ -117,10 +117,12 @@ public class NoteListActivity extends ListActivity {
         File arsatDir = Utils.getArsatDir(this);
         String[] names = arsatDir.list();
         List list = new ArrayList<Map<String, String>>();
-        for (String name: names) {
-            Map<String, String> map = new HashMap<String, String>();
-            map.put("title", name);
-            list.add(map);
+        if (names != null) {
+            for (String name : names) {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("title", name);
+                list.add(map);
+            }
         }
         ListAdapter adapter = new SimpleAdapter(this, list, android.R.layout.simple_list_item_1,
                 new String[] {"title"},

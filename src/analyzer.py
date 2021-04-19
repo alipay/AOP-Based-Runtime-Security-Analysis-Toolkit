@@ -103,8 +103,18 @@ def write_to_file(message):
 
 
 def on_message(message, data):
+    # print(message)
     if not g_has_quit and message["type"] == "send":
         write_to_file(message["payload"])
+
+
+def on_session_off(reason, crash):
+    print(reason + " Please stop the monitor by ^C")
+
+
+def on_device_lost():
+    # print("Device disconnected. Please stop the monitor by ^C")
+    pass  # Do nothing
 
 
 def arsat_monitor(arg):
@@ -125,6 +135,8 @@ def arsat_monitor(arg):
         print("[*] Found device: {}".format(device.name))
         pid = device.spawn([package])
         session = device.attach(pid)
+        device.on("lost", on_device_lost)
+        session.on("detached", on_session_off)
 
         self_path = os.path.abspath(sys.argv[0])
         self_dir = self_path[:self_path.rfind("/")]
@@ -151,7 +163,7 @@ def arsat_monitor(arg):
     log_file.close()
     analyze(package, log_filename, db_filename)
     os.remove(log_filename)
-    print("[-] Done. Write data to {}".format(db_filename))
+    print("[-] Done. Output: {}".format(db_filename))
 
 
 def main():

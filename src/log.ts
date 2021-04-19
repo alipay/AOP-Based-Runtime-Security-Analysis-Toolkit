@@ -1,5 +1,7 @@
 // Log utils.
 
+var DEBUG = false;
+
 function getCurrentThreadId() {
     let threadClass = Java.use("java.lang.Thread");
     let currThread = threadClass.currentThread();
@@ -24,4 +26,16 @@ function log(aspect: string, params: string, printStack: boolean = false, catego
     send(`${getCurrentThreadId()},${aspect},${params},${stack},${category}`);
 }
 
+function debug(msg: string) {
+    if (DEBUG) {
+        console.log(msg);
+    }
+}
+
+function print(msg: string) {
+    console.log(msg);
+}
+
 export { log };
+export { debug };
+export { print };

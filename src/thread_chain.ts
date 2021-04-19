@@ -4,7 +4,7 @@
 import * as ArsatLog from "./log";
 
 function hookThread() {
-    //console.log("Hook Thread.start");
+    ArsatLog.debug("Hook Thread.start");
 
     let threadClass = Java.use("java.lang.Thread");
     threadClass.start.implementation = function () {
@@ -38,7 +38,7 @@ function executorsFilter(name: string, candidateClass: any, candidateClazz: any)
 }
 
 function executorsHooker(name: string, executorClass: any) {
-    // console.log("Hook " + name);
+    ArsatLog.debug("Hook " + name);
     executorClass.execute.overload("java.lang.Runnable").implementation = function (runnable: any) {
         ArsatLog.log("Executor.execute(),", runnable.hashCode(), true);
         this.execute(runnable);
@@ -86,7 +86,7 @@ var runnableBlackList = [
     "android.view.ViewRootImpl$TraversalRunnable",
 ];
 function runnableHooker(name: string, runnableClass: any) {
-    //console.log("hook " + name);
+    ArsatLog.debug("hook " + name);
     runnableClass.run.overload().implementation = function () {
         ArsatLog.log("Runnable.begin()", this.hashCode());
         this.run();
@@ -122,12 +122,12 @@ function hookAllThreadSwitch() {
 }
 
 function hookAllRunnables() {
-    //console.log("Hook all runnable");
+    ArsatLog.debug("Hook all runnable");
     findAndHookMethod("*!run", runnableFilter, runnableHooker);
 }
 
 function hookAllHandlers() {
-    //console.log("Hook all handlers");
+    ArsatLog.debug("Hook all handlers");
     let handlerClass = Java.use("android.os.Handler");
     handlerClass.enqueueMessage.implementation = function (queue: any, msg: any, timeMills: any) {
         let result = this.enqueueMessage(queue, msg, timeMills);
