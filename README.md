@@ -1,6 +1,6 @@
-# Arsat
+# `AOP-Based-Runtime-Security-Analysis-Toolkit`
 
-Arsat is an AOP-based runtime security analysis toolkit for Android applications. This tool is based on the idea of aspect-oriented security (aspect-oriented programming in security). It lets your monitor security and privacy sensitive API calls made by application. Its a powerful tool for seeing how applications work or for tracking down security and privacy issues that you have in your applications.
+Aosanalyzer is an AOP-based runtime security analysis toolkit for Android applications. This tool is based on the idea of aspect-oriented security (aspect-oriented programming in security). It lets your monitor security and privacy sensitive API calls made by application. Its a powerful tool for seeing how applications work or for tracking down security and privacy issues that you have in your applications.
 
 # Requirements
 
