@@ -141,9 +141,11 @@ function hookAllHandlers() {
 }
 
 function initThreadStackChain() {
+    /*
     hookAllThreadSwitch();
     hookAllRunnables();
     hookAllHandlers();
+    */
 }
 
 export { initThreadStackChain };

@@ -1,6 +1,7 @@
 // Log utils.
 
-var DEBUG = false;
+const DEBUG = false;
+const SEP = "|aopsep|"
 
 function getCurrentThreadId() {
     let threadClass = Java.use("java.lang.Thread");
@@ -23,7 +24,7 @@ function log(aspect: string, params: string, printStack: boolean = false, catego
         stack = getStack("");
     }
 
-    send(`${getCurrentThreadId()},${aspect},${params},${stack},${category}`);
+    send(`${getCurrentThreadId()}${SEP}${aspect}${SEP}${params}${SEP}${stack}${SEP}${category}`);
 }
 
 function debug(msg: string) {

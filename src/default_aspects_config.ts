@@ -190,7 +190,6 @@ const gAspects: AspectConfig[] = [
     },
     // ContentResolver: Contact, Sms, Calendar, etc.
     {
-        //class: "android.content.ContentResolver",
         class: "android.app.ContextImpl$ApplicationContentResolver",
         method: "query",
         params_log: [
@@ -202,16 +201,28 @@ const gAspects: AspectConfig[] = [
         category: "Privacy",
     },
     // Dex loaders
-    /*
     {
         class: "dalvik.system.BaseDexClassLoader",
         method: "$init",
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            }
+        ],
+        category: "Security",
     },
     {
         class: "dalvik.system.DexClassLoader",
         method: "$init",
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            }
+        ],
+        category: "Security",
     },
-    */
     {
         class: "dalvik.system.PathClassLoader",
         method: "$init",
@@ -228,34 +239,34 @@ const gAspects: AspectConfig[] = [
         category: "Security",
     },
     // So loaders
-    {
-        class: "java.lang.System",
-        method: "load",
-        params: [
-            "java.lang.String"
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            }
-        ],
-        category: "Security",
-    },
-    {
-        class: "java.lang.Runtime",
-        method: "load",
-        params: [
-            "java.lang.String"
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            }
-        ],
-        category: "Security",
-    },
+    // {
+    //     class: "java.lang.System",
+    //     method: "load",
+    //     params: [
+    //         "java.lang.String"
+    //     ],
+    //     params_log: [
+    //         {
+    //             location: 0,
+    //             method: "toString"
+    //         }
+    //     ],
+    //     category: "Security",
+    // },
+    // {
+    //     class: "java.lang.Runtime",
+    //     method: "load",
+    //     params: [
+    //         "java.lang.String"
+    //     ],
+    //     params_log: [
+    //         {
+    //             location: 0,
+    //             method: "toString"
+    //         }
+    //     ],
+    //     category: "Security",
+    // },
     // Socket server
     {
         class: "java.net.ServerSocket",
@@ -279,15 +290,34 @@ const gAspects: AspectConfig[] = [
         method: "openConnection",
         category: "Privacy",
     },
-    {
-        class: "org.apache.http.client",
-        method: "execute",
-        category: "Privacy",
-    },
-    // Shell
+    // Shell command
     {
         class: "java.lang.Runtime",
         method: "exec",
+        params: [
+            "[Ljava.lang.String;",
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
+        category: "Security",
+    },
+    {
+        class: "java.lang.Runtime",
+        method: "exec",
+        params: [
+            "[Ljava.lang.String;",
+            "[Ljava.lang.String;",
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
         category: "Security",
     },
     {
@@ -304,15 +334,74 @@ const gAspects: AspectConfig[] = [
         ],
         category: "Security",
     },
+    {
+        class: "java.lang.Runtime",
+        method: "exec",
+        params: [
+            "java.lang.String",
+            "[Ljava.lang.String;",
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
+        category: "Security",
+    },
+    {
+        class: "java.lang.Runtime",
+        method: "exec",
+        params: [
+            "[Ljava.lang.String;",
+            "[Ljava.lang.String;",
+            "java.io.File",
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
+        category: "Security",
+    },
+    {
+        class: "java.lang.Runtime",
+        method: "exec",
+        params: [
+            "java.lang.String",
+            "[Ljava.lang.String;",
+            "java.io.File",
+        ],
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
+        category: "Security",
+    },
     // File
     {
-        class: "android.content.Context",
+        class: "android.content.ContextImpl",
         method: "openFileInput",
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
         category: "Security",
     },
     {
         class: "android.content.Context",
         method: "openOrCreateDatabase",
+        params_log: [
+            {
+                location: 0,
+                method: "toString"
+            },
+        ],
         category: "Security",
     },
     {

@@ -10,6 +10,8 @@ import sys
 
 g_has_quit = False
 g_curr_activity = "unknown"
+SEP = "|aopsep|"
+REMOVE_LOG_FILE = True
 
 
 class Context:
@@ -32,7 +34,11 @@ def get_stack(stack, parent):
 
 
 def analyze_line(line, context):
-    ti, thread_id, aspect, params, stack, category = tuple(line.split(","))
+    try:
+        ti, thread_id, aspect, params, stack, category = tuple(line.split(SEP))
+    except:
+        print("Parse line error: " + line)
+        return None
     parent = None
     if thread_id in context.thread_stacktraces:
         parent = context.thread_stacktraces[thread_id]
@@ -87,9 +93,13 @@ def analyze(package, log_filename, db_filename):
                 line = line[:-1]
             data = analyze_line(line, context)
             if data is not None:
-                insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}', '{}', '{entry}', '{foreground}')".format(
-                    *data, entry=g_curr_activity, foreground=g_curr_activity)
-                cur.execute(insert_sql)
+                try:
+                    insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}', '{}', '{entry}', '{foreground}')".format(
+                        *data, entry=g_curr_activity, foreground=g_curr_activity)
+                    cur.execute(insert_sql)
+                except:
+                    print("WARN: ignore sql insertion error: " + line)
+
 
     conn.commit()
     conn.close()
@@ -98,7 +108,7 @@ def analyze(package, log_filename, db_filename):
 def write_to_file(message):
     now = time.localtime()
     now_str = time.strftime("%Y:%m:%d-%H:%M:%S", now)
-    log_file.write(now_str + "," + message)
+    log_file.write(now_str + SEP + message)
     log_file.write("\n")
 
 
@@ -162,7 +172,8 @@ def arsat_monitor(arg):
 
     log_file.close()
     analyze(package, log_filename, db_filename)
-    os.remove(log_filename)
+    if REMOVE_LOG_FILE:
+        os.remove(log_filename)
     print("[-] Done. Output: {}".format(db_filename))
 
 

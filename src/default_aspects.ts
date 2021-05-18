@@ -6,6 +6,9 @@ function gDefaultAspectHandler(caller_obj: any, config: AspectConfig, ...params:
     if (config.params !== undefined) {
         paramsStr = [...config.params].join(" ");
     }
+    let category = `${config.category}`;
+    let aspect = `${config.class}.${config.method}(${paramsStr})`;
+
     let paramsLogStr = "";
     if (config.params_log !== undefined) {
         for (let pl of config.params_log) {
@@ -20,10 +23,8 @@ function gDefaultAspectHandler(caller_obj: any, config: AspectConfig, ...params:
         }
     }
 
-    let category = `${config.category}`;
-    let aspect = `${config.class}.${config.method}(${paramsStr})`;
     if (paramsLogStr === "") {
-        paramsLogStr = '-';
+        paramsLogStr = "-";
     }
     ArsatLog.log(aspect, paramsLogStr, true, category);
 }
