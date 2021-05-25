@@ -1,19 +1,27 @@
-import * as AspectProfile from "./default_aspects";
 import * as ArsatLog from "./log";
+import {AspectConfig, gAspects, gDefaultAspectHandler} from "./default_aspects";
 
-function injectAspects() {
-    AspectProfile.gAspects.forEach(config => {
+function injectAspects(rconfig: AspectConfig[] | null, aconfig: AspectConfig[] | null) {
+    let configs : AspectConfig[] = gAspects;
+
+    if (rconfig !== null && rconfig !== undefined) {
+        configs = rconfig;
+    } else {
+        if (aconfig !== null && aconfig !== undefined) {
+            configs = configs.concat(aconfig);
+        }
+    }
+    configs.forEach(config => {
         injectAspect(config);
     });
 }
 
-function injectAspect(config: AspectProfile.AspectConfig) {
+function injectAspect(config: AspectConfig) {
     let targetClass = undefined;
     try {
         targetClass = Java.use(config.class);
     } catch (e) {
-        // ignore
-        // console.log(`Can't find ${config.class}`);
+        return;
     }
     if (targetClass === undefined) {
         return;
@@ -23,10 +31,7 @@ function injectAspect(config: AspectProfile.AspectConfig) {
         return;
     }
 
-    let handler = config.handler;
-    if (handler === undefined) {
-        handler = AspectProfile.gDefaultAspectHandler;
-    }
+    let handler = gDefaultAspectHandler;
     let params = "";
     if (config.params !== undefined) {
         params = [...config.params].join(",");

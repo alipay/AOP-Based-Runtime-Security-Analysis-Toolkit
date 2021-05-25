@@ -7,9 +7,59 @@ type AspectConfig = {
     method: string;
     params?: string[];
     params_log?: ParamLogConfig[];
-    handler?: any;
+//    handler?: any;
     category: string;
 };
+
+function is_valid_param_config(param: any) {
+    if (! ("location" in param) || (typeof param.location) !== "number") {
+        return false;
+    }
+    if (! ("method" in param) || (typeof param.method) !== "string") {
+        return false;
+    }
+    return true;
+}
+
+function is_valid_config(configs: any) {
+    if (! Array.isArray(configs)) {
+        return false;
+    }
+
+    for (let config of configs) {
+        if (! ("class" in config) || (typeof config.class) !== "string") {
+            return false;
+        }
+        if (! ("method" in config) || (typeof config.method) !== "string") {
+            return false;
+        }
+        if (! ("category" in config) || (typeof config.category) !== "string") {
+            return false;
+        }
+        if ("params" in config) {
+            if (! Array.isArray(config.params)) {
+                return false;
+            }
+            for (let p of config.params) {
+                if (typeof p !== "string") {
+                    return false;
+                }
+            }
+        }
+        if ("params_log" in config) {
+            if (! Array.isArray(config.params_log)) {
+                return false;
+            }
+            for (let pl of config.params_log) {
+                if (! is_valid_param_config(pl)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 const gAspects: AspectConfig[] = [
     // ClipboardManager
     {
@@ -294,85 +344,6 @@ const gAspects: AspectConfig[] = [
     {
         class: "java.lang.Runtime",
         method: "exec",
-        params: [
-            "[Ljava.lang.String;",
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            },
-        ],
-        category: "Security",
-    },
-    {
-        class: "java.lang.Runtime",
-        method: "exec",
-        params: [
-            "[Ljava.lang.String;",
-            "[Ljava.lang.String;",
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            },
-        ],
-        category: "Security",
-    },
-    {
-        class: "java.lang.Runtime",
-        method: "exec",
-        params: [
-            "java.lang.String"
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            },
-        ],
-        category: "Security",
-    },
-    {
-        class: "java.lang.Runtime",
-        method: "exec",
-        params: [
-            "java.lang.String",
-            "[Ljava.lang.String;",
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            },
-        ],
-        category: "Security",
-    },
-    {
-        class: "java.lang.Runtime",
-        method: "exec",
-        params: [
-            "[Ljava.lang.String;",
-            "[Ljava.lang.String;",
-            "java.io.File",
-        ],
-        params_log: [
-            {
-                location: 0,
-                method: "toString"
-            },
-        ],
-        category: "Security",
-    },
-    {
-        class: "java.lang.Runtime",
-        method: "exec",
-        params: [
-            "java.lang.String",
-            "[Ljava.lang.String;",
-            "java.io.File",
-        ],
         params_log: [
             {
                 location: 0,
@@ -521,5 +492,4 @@ const gAspects: AspectConfig[] = [
         category: "Security",
     }
 ];
-export { AspectConfig };
-export { gAspects };
+export { AspectConfig, gAspects, is_valid_config };

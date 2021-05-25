@@ -10,6 +10,7 @@ import sys
 
 g_has_quit = False
 g_curr_activity = "unknown"
+
 SEP = "|aopsep|"
 REMOVE_LOG_FILE = True
 
@@ -49,16 +50,11 @@ def analyze_line(line, context):
         return None
     elif aspect == "Activity.onPause()":
         return None
-    elif aspect == "Thread.start()":
-        context.thread_stacktraces[params] = ti, thread_id, aspect, params, stack, category, parent
-    elif aspect == "Runnable.begin()":
-        if params in context.runnables:
-            context.thread_stacktraces[thread_id] = context.runnables[params]
-    elif aspect == "Runnable.end()":
-        if params in context.runnables:
-            del context.runnables[params]
     elif aspect == "ThreadPoolExecutor.execute()":
         context.runnables[params] = ti, thread_id, aspect, params, stack, category, parent
+    elif aspect == "ThreadPoolExecutor.getTask()":
+        if params in context.runnables:
+            context.thread_stacktraces[thread_id] = context.runnables[params]
     elif aspect == "Handler.enqueueMessage()":
         handler_black_words = {
             "android.view.View.post(",
@@ -74,6 +70,8 @@ def analyze_line(line, context):
     elif aspect == "Handler.dispatchMessage()":
         if params in context.messages:
             context.thread_stacktraces[thread_id] = context.messages[params]
+    elif aspect == "Thread.start()":
+        context.thread_stacktraces[params] = ti, thread_id, aspect, params, stack, category, parent
     else:
         stack = get_stack(stack, parent)
         return ti, aspect, params, stack, category
@@ -94,12 +92,12 @@ def analyze(package, log_filename, db_filename):
             data = analyze_line(line, context)
             if data is not None:
                 try:
-                    insert_sql = "INSERT INTO arsat VALUES ('{}', '{}', '{}', '{}', '{}', '{entry}', '{foreground}')".format(
-                        *data, entry=g_curr_activity, foreground=g_curr_activity)
-                    cur.execute(insert_sql)
+                    insert_sql = "INSERT INTO arsat VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    params = [i for i in data]
+                    params.extend([g_curr_activity, g_curr_activity])
+                    cur.execute(insert_sql, params)
                 except:
                     print("WARN: ignore sql insertion error: " + line)
-
 
     conn.commit()
     conn.close()
@@ -108,7 +106,10 @@ def analyze(package, log_filename, db_filename):
 def write_to_file(message):
     now = time.localtime()
     now_str = time.strftime("%Y:%m:%d-%H:%M:%S", now)
-    log_file.write(now_str + SEP + message)
+    log_str = now_str + SEP + message
+    log_str = log_str.replace("\r", "")
+    log_str = log_str.replace("\n", "")
+    log_file.write(log_str)
     log_file.write("\n")
 
 
@@ -119,7 +120,7 @@ def on_message(message, data):
 
 
 def on_session_off(reason, crash):
-    print(reason + " Please stop the monitor by ^C")
+    print("[-] Quit: " + reason)
 
 
 def on_device_lost():
@@ -127,9 +128,10 @@ def on_device_lost():
     pass  # Do nothing
 
 
-def arsat_monitor(arg):
-    package = arg.package
-    output_dir = os.getcwd() if arg.output is None else arg.output
+def arsat_monitor(args):
+    package = args.package
+    output_dir = os.getcwd() if args.output is None else args.output
+
     log_filename = output_dir + "/" + package + ".log"
     db_filename = output_dir + "/" + package + ".db"
 
@@ -140,9 +142,25 @@ def arsat_monitor(arg):
         print("Can't create log file!")
         sys.exit(1)
 
+    rconfig = None
+    aconfig = None
+    if args.rconfig:
+        try:
+            rconfig = open(args.rconfig, "r").read()
+        except:
+            print("Can't open/read " + args.rconfig)
+            sys.exit(1)
+    if args.aconfig:
+        try:
+            aconfig = open(args.aconfig, "r").read()
+        except:
+            print("Can't open/read " + args.aconfig)
+            sys.exit(1)
+
     try:
         device = frida.get_usb_device()
         print("[*] Found device: {}".format(device.name))
+
         pid = device.spawn([package])
         session = device.attach(pid)
         device.on("lost", on_device_lost)
@@ -155,16 +173,20 @@ def arsat_monitor(arg):
         script = session.create_script(script_content)
         script.on("message", on_message)
         script.load()
+        if not script.exports.init(args.chain, rconfig, aconfig):
+            sys.exit(1)
         device.resume(pid)
     except Exception as e:
         print(e)
         sys.exit(1)
 
     try:
-        while True:
-            sys.stdin.read()
+        sys.stdin.readline()
     except KeyboardInterrupt:
-        print("[-] Quit monitor.")
+        pass
+
+    print("[-] Quit the monitoring...")
+
     global g_has_quit
     g_has_quit = True
 
@@ -174,13 +196,23 @@ def arsat_monitor(arg):
     analyze(package, log_filename, db_filename)
     if REMOVE_LOG_FILE:
         os.remove(log_filename)
+
     print("[-] Done. Output: {}".format(db_filename))
+    # session.detach()
+    sys.exit(0)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("package", help="application package name")
     parser.add_argument("-o", "--output", help="output path")
+    parser.add_argument("-c", "--chain", help="make chained stack traces",
+                        action="store_true")
+    config_group = parser.add_mutually_exclusive_group()
+    config_group.add_argument("-k", "--rconfig", help="use config file instead"
+                              " of the default")
+    config_group.add_argument("-K", "--aconfig", help="add config file to the "
+                              "default")
     args = parser.parse_args()
 
     arsat_monitor(args)

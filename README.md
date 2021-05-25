@@ -9,7 +9,7 @@ Aosanalyzer is an AOP-based runtime security analysis toolkit for Android applic
 # Installation
 
 ```
-npm run build
+npm install && npm run build
 src/analyzer.py -h
 ```
 
