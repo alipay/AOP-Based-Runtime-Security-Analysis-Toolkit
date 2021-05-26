@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NoteBook</string>
+    <string name="new_note">New Note</string>
+    <string name="help">Settings</string>
+    <string name="about">Arsat Demo 0.0.1\n\n@2021</string>
+    <string name="check_update">Check Update</string>
+</resources>

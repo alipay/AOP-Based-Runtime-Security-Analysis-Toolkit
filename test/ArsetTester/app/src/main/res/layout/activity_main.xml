@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button android:id="@+id/new_thread"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="new Thread"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/new_custom_thread"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="new Thread"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/executor_service_execute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ExecutorService.execute"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/executor_service_submit_runnable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ExecutorService.submitRunnable"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/executor_service_submit_callable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ExecutorService.submitCallable"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/getinstalledpackages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="getInstalledPackages"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/handler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="handler"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/fis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FileInputStream_String"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/fis2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FileInputStream_File"
+            android:onClick="onClick"/>
+        <Button android:id="@+id/query"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="query"
+            android:onClick="onClick"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
